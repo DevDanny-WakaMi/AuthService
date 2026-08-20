@@ -1,0 +1,101 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Get a free hosted Postgres database in seconds: `npx create-db`
+
+generator client {
+   provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+
+enum UserRole {
+
+  RUNNER
+
+  REQUESTER
+
+}
+
+model User {
+
+  id              String    @id @default(uuid())
+
+  email           String?   @unique
+
+  phone           String?   @unique
+
+  phoneExtension  String?
+
+  firstName       String?
+
+  lastName        String?
+
+  role            UserRole
+
+  isEmailVerified Boolean   @default(false)
+
+  isPhoneVerified Boolean   @default(false)
+
+  profileComplete Boolean   @default(false)
+
+  referralCode    String    @unique
+
+  createdAt       DateTime  @default(now())
+
+  updatedAt       DateTime  @updatedAt
+
+  otps          Otp[]
+
+  refreshTokens RefreshToken[]
+
+  @@index([role])
+
+}
+
+model Otp {
+
+  id         String    @id @default(uuid())
+
+  identifier String
+
+  code       String
+
+  role       UserRole?
+
+  expiresAt  DateTime
+
+  used       Boolean   @default(false)
+
+  createdAt  DateTime  @default(now())
+
+  userId     String?
+
+  user       User?     @relation(fields: [userId], references: [id])
+
+  @@index([identifier])
+
+}
+
+model RefreshToken {
+
+  id        String   @id @default(uuid())
+
+  token     String   @unique
+
+  userId    String
+
+  user      User     @relation(fields: [userId], references: [id])
+
+  expiresAt DateTime
+
+  revoked   Boolean  @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+
+}
